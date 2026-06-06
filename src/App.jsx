@@ -121,7 +121,7 @@ function LoginPage({ onDemoUser, onDemoAdmin }) {
   );
 }
 
-function DashboardPage({ user, quota, onNavigate }) {
+function DashboardPage({ user, quota, isAdmin, onNavigate }) {
   return (
     <div className="px-4 py-6 pb-24">
       <h1 className="text-3xl font-bold text-white mb-1">Halo, <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{user.name}</span>! 👋</h1>
@@ -141,7 +141,7 @@ function DashboardPage({ user, quota, onNavigate }) {
       </div>
 
       <p className="text-xs font-bold text-gray-500 uppercase mb-3">Akses Cepat</p>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 mb-6">
         {[
           { icon: Zap, label: 'Generator', page: 'generator', color: 'from-purple-600' },
           { icon: Play, label: 'Feed', page: 'feed', color: 'from-blue-600' },
@@ -156,6 +156,22 @@ function DashboardPage({ user, quota, onNavigate }) {
           </button>
         ))}
       </div>
+
+      {isAdmin && (
+        <div>
+          <p className="text-xs font-bold text-gray-500 uppercase mb-3">Admin Panel</p>
+          <button onClick={() => onNavigate('admin')} className="w-full glass-card-hover rounded-2xl p-4 flex items-center gap-3 border border-red-500/20 bg-gradient-to-br from-red-900/10 to-transparent">
+            <div className="w-10 h-10 bg-gradient-to-r from-red-600 to-transparent rounded-lg flex items-center justify-center">
+              <Shield size={20} className="text-white" />
+            </div>
+            <div className="flex-1 text-left">
+              <span className="text-xs font-bold text-white">Dashboard Admin</span>
+              <p className="text-xs text-red-400">Kelola pengajuan & pengguna</p>
+            </div>
+            <ChevronRight size={16} className="text-red-400" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -349,6 +365,67 @@ function HargaPage({ currentPlan, addToast }) {
   );
 }
 
+function AdminDashboard({ addToast }) {
+  const [section, setSection] = useState('overview');
+  const [applications, setApplications] = useState([
+    { id: 1, name: 'Bagas Nugroho', platform: 'YouTube', status: 'pending' },
+    { id: 2, name: 'Citra Lestari', platform: 'TikTok', status: 'pending' },
+    { id: 3, name: 'Rizky Pratama', platform: 'Instagram', status: 'approved' },
+  ]);
+
+  return (
+    <div className="px-4 py-6 pb-20">
+      <h1 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+        <Shield size={24} className="text-red-400" /> Dashboard Admin
+      </h1>
+      <div className="flex gap-2 mb-4">
+        {[{id:'overview',label:'Ringkasan'},{id:'apps',label:'Pengajuan'},{id:'users',label:'Users'},{id:'groups',label:'Grup'}].map(s => (
+          <button key={s.id} onClick={() => setSection(s.id)} className={`px-3 py-2 text-xs font-bold rounded-lg transition ${section === s.id ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' : 'glass-card text-gray-400 hover:text-white border border-purple-500/20'}`}>
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      {section === 'overview' && (
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { label: 'Total Users', value: '1,284' },
+            { label: 'Active Today', value: '342' },
+            { label: 'Generated Today', value: '1,847' },
+            { label: 'Pending Apps', value: '2' },
+          ].map((item, i) => (
+            <div key={i} className="glass-card rounded-2xl p-4 border border-purple-500/20">
+              <p className="text-xs text-gray-400">{item.label}</p>
+              <p className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{item.value}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {section === 'apps' && (
+        <div className="flex flex-col gap-3">
+          {applications.map(app => (
+            <div key={app.id} className="glass-card rounded-lg p-3 border border-purple-500/20 flex items-center justify-between">
+              <div>
+                <p className="font-bold text-white text-sm">{app.name}</p>
+                <p className="text-xs text-gray-400">{app.platform}</p>
+              </div>
+              {app.status === 'pending' ? (
+                <div className="flex gap-1">
+                  <button onClick={() => { setApplications(prev => prev.map(a => a.id === app.id ? {...a, status:'approved'} : a)); addToast('✅ Approved!'); }} className="bg-emerald-700 text-white text-xs px-2 py-1 rounded">✓</button>
+                  <button onClick={() => { setApplications(prev => prev.map(a => a.id === app.id ? {...a, status:'rejected'} : a)); addToast('❌ Rejected!'); }} className="bg-red-700 text-white text-xs px-2 py-1 rounded">✕</button>
+                </div>
+              ) : (
+                <span className={`text-xs px-2 py-1 rounded font-bold ${app.status === 'approved' ? 'bg-emerald-700 text-emerald-300' : 'bg-red-700 text-red-300'}`}>{app.status}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   const [page, setPage] = useState('landing');
   const [user, setUser] = useState(null);
@@ -391,13 +468,16 @@ export default function App() {
   if (page === 'landing') return <><LandingPage onNavigate={setPage} /><Toast toasts={toasts} /></>;
   if (page === 'login') return <><LoginPage onDemoUser={loginAsDemo} onDemoAdmin={loginAsAdmin} /><Toast toasts={toasts} /></>;
 
+  const isAdmin = user?.plan === 'Ultra Pro';
+
   const pages = {
-    dashboard: <DashboardPage user={user} quota={quota} onNavigate={setActivePage} />,
+    dashboard: <DashboardPage user={user} quota={quota} isAdmin={isAdmin} onNavigate={setActivePage} />,
     generator: <GeneratorPage quota={quota} onQuotaDecrease={() => setQuota(q => Math.max(0, q - 1))} addToast={addToast} />,
     feed: <FeedPage addToast={addToast} />,
     inspirasi: <InspirasiPage addToast={addToast} />,
     pesan: <PesanPage addToast={addToast} />,
     harga: <HargaPage currentPlan={user?.plan} addToast={addToast} />,
+    admin: <AdminDashboard addToast={addToast} />,
   };
 
   return (
@@ -431,4 +511,4 @@ export default function App() {
       </nav>
     </div>
   );
-      }
+          }
