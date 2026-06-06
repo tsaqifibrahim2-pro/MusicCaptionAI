@@ -89,6 +89,14 @@ function LandingPage({ onNavigate }) {
 }
 
 function LoginPage({ onDemoUser, onDemoAdmin }) {
+  const [form, setForm] = useState({ email: '', password: '' });
+
+  const handleLogin = () => {
+    if (!form.email.trim()) { alert('Email harus diisi!'); return; }
+    if (!form.password.trim()) { alert('Password harus diisi!'); return; }
+    onDemoUser();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
@@ -101,9 +109,9 @@ function LoginPage({ onDemoUser, onDemoAdmin }) {
         </div>
 
         <div className="glass-card rounded-2xl p-6 border border-purple-500/20">
-          <input type="email" placeholder="musisi@email.com" className="w-full glass-card px-4 py-3 rounded-lg text-white placeholder-gray-600 border border-purple-500/20 mb-3 outline-none focus:border-purple-500" />
-          <input type="password" placeholder="••••••••" className="w-full glass-card px-4 py-3 rounded-lg text-white placeholder-gray-600 border border-purple-500/20 mb-4 outline-none focus:border-purple-500" />
-          <button onClick={onDemoUser} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-lg font-bold mb-4 transition">Masuk</button>
+          <input type="email" placeholder="musisi@email.com" className="w-full glass-card px-4 py-3 rounded-lg text-white placeholder-gray-600 border border-purple-500/20 mb-3 outline-none focus:border-purple-500" value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
+          <input type="password" placeholder="••••••••" className="w-full glass-card px-4 py-3 rounded-lg text-white placeholder-gray-600 border border-purple-500/20 mb-4 outline-none focus:border-purple-500" value={form.password} onChange={e => setForm({...form, password: e.target.value})} onKeyDown={e => e.key === 'Enter' && handleLogin()} />
+          <button onClick={handleLogin} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-lg font-bold mb-4 transition">Masuk</button>
 
           <div className="flex items-center gap-3 my-4">
             <div className="flex-1 h-px bg-gray-700" />
@@ -225,7 +233,7 @@ function GeneratorPage({ quota, onQuotaDecrease, addToast }) {
             <div key={i} className="glass-card rounded-2xl p-4 border border-purple-500/20 bg-gradient-to-br from-purple-900/10 to-transparent">
               <p className="text-xs text-purple-400 font-bold uppercase mb-2">{r.length}</p>
               <p className="text-sm text-gray-300 mb-3">{r.caption}</p>
-              <button onClick={() => { navigator.clipboard.writeText(r.caption); addToast('📋 Disalin!'); }} className="w-full glass-card-hover py-2 text-xs text-gray-300 rounded-lg border border-purple-500/20">Salin Semua</button>
+              <button onClick={() => { navigator.clipboard.writeText(r.caption); }} className="w-full glass-card-hover py-2 text-xs text-gray-300 rounded-lg border border-purple-500/20">Salin Semua</button>
             </div>
           ))}
         </div>
@@ -304,7 +312,16 @@ function InspirasiPage({ addToast }) {
 
 function PesanPage({ addToast }) {
   const [activeChat, setActiveChat] = useState(null);
-  const [dmChats] = useState(DM_CHATS);
+  const [message, setMessage] = useState('');
+  const [dmChats, setDmChats] = useState(DM_CHATS);
+
+  const sendMessage = () => {
+    if (!message.trim()) { addToast('Ketik pesan dulu!'); return; }
+    setDmChats(prev => prev.map(d => d.id === activeChat.id ? { ...d, messages: [...d.messages, { id: Date.now(), from: 'me', text: message }] } : d));
+    setActiveChat(prev => ({ ...prev, messages: [...prev.messages, { id: Date.now(), from: 'me', text: message }] }));
+    setMessage('');
+    addToast('💬 Pesan terkirim!');
+  };
 
   if (activeChat) {
     return (
@@ -323,8 +340,8 @@ function PesanPage({ addToast }) {
           ))}
         </div>
         <div className="glass-card px-4 py-3 flex gap-2 border-t border-purple-500/20">
-          <input placeholder="Ketik pesan..." className="flex-1 glass-card px-3 py-2 rounded-lg text-white border border-purple-500/20 outline-none focus:border-purple-500" />
-          <button className="bg-gradient-to-r from-purple-600 to-pink-600 w-9 h-9 rounded-lg flex items-center justify-center text-white"><Send size={16} /></button>
+          <input value={message} onChange={e => setMessage(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendMessage()} placeholder="Ketik pesan..." className="flex-1 glass-card px-3 py-2 rounded-lg text-white border border-purple-500/20 outline-none focus:border-purple-500" />
+          <button onClick={sendMessage} className="bg-gradient-to-r from-purple-600 to-pink-600 w-9 h-9 rounded-lg flex items-center justify-center text-white hover:opacity-90"><Send size={16} /></button>
         </div>
       </div>
     );
@@ -372,6 +389,22 @@ function AdminDashboard({ addToast }) {
     { id: 2, name: 'Citra Lestari', platform: 'TikTok', status: 'pending' },
     { id: 3, name: 'Rizky Pratama', platform: 'Instagram', status: 'approved' },
   ]);
+  const [groups, setGroups] = useState([
+    { id: 1, name: 'Vibes Bahagia & Sad', members: 245, type: 1 },
+    { id: 2, name: 'Romance Music Corner', members: 189, type: 2 },
+    { id: 3, name: 'Creator Hub Indonesia', members: 87, type: 3 },
+    { id: 4, name: 'Musik Motivasi Nusantara', members: 312, type: 4 },
+  ]);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [newGroup, setNewGroup] = useState({ name: '', type: 1 });
+
+  const createGroup = () => {
+    if (!newGroup.name.trim()) { addToast('Nama grup harus diisi!'); return; }
+    setGroups([...groups, { id: Date.now(), name: newGroup.name, members: 1, type: newGroup.type }]);
+    setNewGroup({ name: '', type: 1 });
+    setShowCreateGroup(false);
+    addToast('✅ Grup dibuat!');
+  };
 
   return (
     <div className="px-4 py-6 pb-20">
@@ -418,6 +451,33 @@ function AdminDashboard({ addToast }) {
               ) : (
                 <span className={`text-xs px-2 py-1 rounded font-bold ${app.status === 'approved' ? 'bg-emerald-700 text-emerald-300' : 'bg-red-700 text-red-300'}`}>{app.status}</span>
               )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {section === 'groups' && (
+        <div>
+          <button onClick={() => setShowCreateGroup(true)} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 rounded-lg font-bold text-sm mb-4">+ Buat Grup Baru</button>
+          {showCreateGroup && (
+            <div className="glass-card rounded-2xl p-4 mb-4 border border-purple-500/20">
+              <input value={newGroup.name} onChange={e => setNewGroup({...newGroup, name: e.target.value})} placeholder="Nama grup..." className="w-full glass-card px-4 py-3 rounded-lg text-white border border-purple-500/20 mb-3 outline-none focus:border-purple-500" />
+              <select value={newGroup.type} onChange={e => setNewGroup({...newGroup, type: parseInt(e.target.value)})} className="w-full glass-card px-4 py-3 rounded-lg text-white border border-purple-500/20 mb-3 outline-none focus:border-purple-500">
+                <option value={1}>Tipe 1: Lagu Bahagia & Sad</option>
+                <option value={2}>Tipe 2: Romance Music Corner</option>
+                <option value={3}>Tipe 3: Creator Hub (Eksklusif)</option>
+                <option value={4}>Tipe 4: Musik Motivasi</option>
+              </select>
+              <div className="flex gap-2">
+                <button onClick={createGroup} className="flex-1 bg-emerald-700 text-white py-2 rounded-lg font-bold text-sm">Buat</button>
+                <button onClick={() => setShowCreateGroup(false)} className="flex-1 glass-card text-gray-300 py-2 rounded-lg border border-purple-500/20 text-sm">Batal</button>
+              </div>
+            </div>
+          )}
+          {groups.map(g => (
+            <div key={g.id} className="glass-card rounded-lg p-3 border border-purple-500/20 mb-2">
+              <p className="font-bold text-white text-sm">{g.name}</p>
+              <p className="text-xs text-gray-400">{g.members} anggota</p>
             </div>
           ))}
         </div>
@@ -511,4 +571,4 @@ export default function App() {
       </nav>
     </div>
   );
-          }
+              }
