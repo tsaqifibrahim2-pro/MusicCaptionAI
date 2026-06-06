@@ -1,187 +1,431 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Music, Send, Image, FileAudio, Mic, Heart, MessageCircle, Share2, 
-  Copy, RefreshCw, Plus, Search, Settings, LogOut, User, Menu, X,
-  Check, AlertCircle, TrendingUp, Users, Video, Sparkles, MessageSquare,
-  Zap, ChevronRight, Clock, MoreVertical, Star, Crown, Award, Play,
-  CreditCard, HelpCircle, Instagram, Twitter, Youtube, TikTok, ArrowLeft,
-  Filter, Bell, Eye, EyeOff, Phone, Download, Upload, Sticker, Smile,
-  Home, Sparkles as Spark
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Music, Home, Zap, Play, MessageCircle, CreditCard,
+  Sparkles, Heart, Share2, Copy, Check, X, LogOut,
+  Shield, Hash, RefreshCw, ChevronRight, ArrowLeft,
+  Send, Star, AlertCircle
 } from 'lucide-react';
 
-// ========================================
-// MOCK DATA & CONSTANTS
-// ========================================
-
 const GENRES = ['Pop', 'R&B', 'Hip-Hop', 'Indie', 'Jazz', 'Electronic', 'Folk', 'Rock', 'Classical', 'Dangdut', 'Koplo'];
-const MOODS = ['Bahagia', 'Melankolis', 'Energetik', 'Romantis', 'Motivasi', 'Santai', 'Sedih', 'Nostalgik', 'Dramatis', 'Inspiratif'];
+const MOODS = ['Bahagia', 'Melankolis', 'Energetik', 'Romantis', 'Motivasi', 'Santai', 'Sedih', 'Nostalgik'];
 
-const DUMMY_VIDEO_FEED = [
-  { id: 1, name: 'Ahmad Dani', avatar: 'AD', title: 'Senja di Pantai', genre: 'Indie', gradient: 'video-gradient-1', likes: 1240, comments: 89, shares: 45 },
-  { id: 2, name: 'Nisa Kayla', avatar: 'NK', title: 'Cinta Pertama', genre: 'Pop', gradient: 'video-gradient-2', likes: 2560, comments: 156, shares: 78 },
-  { id: 3, name: 'Rizky Febian', avatar: 'RF', title: 'Duka', genre: 'R&B', gradient: 'video-gradient-3', likes: 890, comments: 45, shares: 23 },
-  { id: 4, name: 'Isyana Saraswati', avatar: 'IS', title: 'Nyaman', genre: 'Jazz', gradient: 'video-gradient-4', likes: 3400, comments: 234, shares: 112 },
-  { id: 5, name: 'Tulus', avatar: 'TL', title: 'Jatuh Cinta', genre: 'Pop', gradient: 'video-gradient-5', likes: 1890, comments: 123, shares: 67 },
+const FEED_POSTS = [
+  { id: 1, user: 'Rina Kusuma', handle: '@rinakusuma', caption: '🎵 Single terbaru sudah rilis! #musikindonesia', likes: 284, comments: 42 },
+  { id: 2, user: 'Dimas Pratama', handle: '@dimaspratama', caption: 'Latihan gitar acoustic 🎸 #acoustic', likes: 156, comments: 28 },
+  { id: 3, user: 'Studio Nada', handle: '@studionada', caption: 'Behind the scenes! 🎙️✨ #studio', likes: 521, comments: 89 },
 ];
 
-const DUMMY_TESTIMONI = [
-  { id: 1, name: 'Afgan', role: 'Penyanyi Pop', text: 'MusicCaption AI membantu saya menemukan caption yang pas untuk lagu. Sangat membantu!' },
-  { id: 2, name: 'Raisa', role: 'Musisi', text: 'Tool yang luar biasa! Sekarang semakin mudah mempromisasi musik di social media.' },
-  { id: 3, name: 'Tulus', role: 'Indie Artist', text: 'AI Inspiration-nya benar-benar gives saya ide baru untuk buat lagu. Recommend!' },
+const DM_CHATS = [
+  { id: 1, name: 'Rina Kusuma', online: true, unread: 2, lastMsg: 'Keren banget!', messages: [
+    { id: 1, from: 'them', text: 'Hei! Udah denger lagu baru?', time: '10:00' },
+    { id: 2, from: 'me', text: 'Belum nih', time: '10:01' },
+  ]},
 ];
 
-const DUMMY_DM = [
-  { id: 1, name: 'Isyana Saraswati', avatar: 'IS', lastMessage: 'Kita Kollab bareng ya! 🎵', time: '2m', unread: 2, online: true },
-  { id: 2, name: 'Nisa Kayla', avatar: 'NK', lastMessage: 'Lagu barunya bagus banget', time: '1j', unread: 0, online: false },
+const PACKAGES = [
+  { id: 'gratis', name: 'Gratis', price: 0, gen: '5', features: ['5 generate/bulan', 'Caption IG & TikTok'] },
+  { id: 'starter', name: 'Starter', price: 29000, gen: '50', popular: true, features: ['50 generate/bulan', 'Semua platform'] },
+  { id: 'pro', name: 'Pro', price: 79000, gen: '200', features: ['200 generate/bulan', 'Unlimited Inspirasi'] },
 ];
 
-const DUMMY_GRUP = [
-  { id: 1, name: 'Kolaborasi Indie Jakarta', avatar: 'KI', lastMessage: 'Rizky: Siapa yang mau collab minggu ini?', time: '5m', unread: 5, members: 12, isGrup: true },
-  { id: 2, name: 'Tim Produksi Dangdut', avatar: 'TD', lastMessage: 'Admin: Studio sudah ready', time: '30m', unread: 1, members: 8, isGrup: true },
-];
-
-const GLOBAL_GRUP = [
-  { id: 1, name: 'Vibes Bahagia & Sad Indonesia', avatar: 'VB', type: 1, description: 'Untuk berbagi lagu dengan nuansa bahagia atau sedih', members: 245, isExclusive: false },
-  { id: 2, name: 'Romance Music Corner', avatar: 'RM', type: 2, description: 'Untuk berbagi lagu bertema cinta', members: 189, isExclusive: false },
-  { id: 3, name: 'Creator Hub Indonesia', avatar: 'CH', type: 3, description: 'Khusus untuk konten kreator musik aktif', members: 87, isExclusive: true },
-  { id: 4, name: 'Musik Motivasi Nusantara', avatar: 'MM', type: 4, description: 'Untuk berbagi lagu motivasi', members: 312, isExclusive: false },
-];
-
-const PAKET = [
-  { id: 'gratis', name: 'GRATIS', price: 0, generate: 3, upload: 3, inspirasi: 3, ads: true, badge: 'gratis', features: ['3x generate/bulan', '3x upload video', '3x AI Inspirasi', 'DM & Grup Chat unlimited', 'Buat grup gratis', 'Ada iklan'] },
-  { id: 'standard', name: 'STANDARD', price: 30000, generate: 50, upload: 50, inspirasi: 50, ads: false, badge: 'standard', features: ['50x generate caption', '50x upload video', '50x AI Inspirasi', 'DM & Grup Chat unlimited', 'Buat grup gratis', 'Tanpa iklan'] },
-  { id: 'pro', name: 'PRO', price: 50000, generate: 200, upload: 200, inspirasi: 'unlimited', ads: false, badge: 'pro', popular: true, features: ['200x generate caption', '200x upload video', 'AI Inspirasi unlimited', 'DM & Grup Chat unlimited', 'Badge Pro di profil', 'Prioritas lebih cepat', 'Tanpa iklan'] },
-  { id: 'ultra', name: 'ULTRA PRO', price: 99000, generate: 'unlimited', upload: 'unlimited', inspirasi: 'unlimited', ads: false, badge: 'ultra', features: ['Unlimited semua', 'Caption eksklusif YouTube & Twitter/X', 'Custom tone caption', 'Badge Ultra Pro', 'Support prioritas'] },
-];
-
-// ========================================
-// UI COMPONENTS
-// ========================================
-
-const Toast = ({ message, type, onClose }) => {
-  useEffect(() => { const timer = setTimeout(onClose, 3000); return () => clearTimeout(timer); }, [onClose]);
+function Avatar({ name, size = 36 }) {
+  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase();
   return (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-slide-up">
-      <div className={`glass-card rounded-full px-6 py-3 flex items-center gap-2 ${type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-        {type === 'success' ? <Check size={18} /> : <AlertCircle size={18} />}
-        <span className="text-sm font-medium">{message}</span>
-      </div>
+    <div style={{ width: size, height: size, background: '#7C3AED' }} className="rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+      {initials.slice(0, 2)}
     </div>
   );
-};
+}
 
-const Button = ({ children, onClick, variant = 'primary', size = 'md', disabled, className, icon: Icon }) => {
-  const variants = { primary: "bg-[#7C3AED] hover:bg-[#6d28d9] text-white glow-violet-sm", secondary: "bg-white/10 hover:bg-white/20 text-white border border-white/20", ghost: "bg-transparent hover:bg-white/10 text-white/80", danger: "bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/30" };
-  const sizes = { sm: "px-3 py-1.5 text-sm", md: "px-5 py-2.5 text-base", lg: "px-6 py-3 text-lg" };
-  return <button onClick={onClick} disabled={disabled} className={`font-medium rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${variants[variant]} ${sizes[size]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}>{Icon && <Icon size={size === 'sm' ? 16 : 20} />}{children}</button>;
-};
-
-const Input = ({ label, type = 'text', placeholder, value, onChange, icon: Icon, options, onSelect, isSelect }) => (
-  <div className="w-full">{label && <label className="block text-sm text-white/60 mb-2">{label}</label>}<div className="relative">{Icon && <Icon size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />}{isSelect ? <select value={value} onChange={onSelect} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-12 text-white focus:outline-none focus:border-[#7C3AED] appearance-none">{options?.map((opt) => <option key={opt} value={opt} className="bg-[#0a0a0a]">{opt}</option>)}</select> : <input type={type} placeholder={placeholder} value={value} onChange={onChange} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#7C3AED]" />}</div></div>
-);
-
-const Chip = ({ children, selected, onClick }) => (
-  <button onClick={onClick} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selected ? 'bg-[#7C3AED] text-white glow-violet-sm' : 'bg-white/10 text-white/60 hover:bg-white/20'}`}>{children}</button>
-);
-
-const Card = ({ children, className, onClick, glow }) => (
-  <div onClick={onClick} className={`glass-card rounded-2xl p-5 ${glow ? 'glow-violet' : ''} ${onClick ? 'cursor-pointer hover:bg-white/05' : ''} ${className}`}>{children}</div>
-);
-
-const Badge = ({ children, type }) => <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${type === 'pro' ? 'bg-[#7C3AED]/20 text-[#a78bfa]' : type === 'ultra' ? 'bg-yellow-500/20 text-yellow-300' : 'bg-green-500/20 text-green-300'}`}>{children}</span>;
-
-const Spinner = ({ size = 'md' }) => <div className={`${size === 'sm' ? 'w-4 h-4' : 'w-8 h-8'} border-2 border-white/20 border-t-[#7C3AED] rounded-full animate-spin`} />;
-
-const Modal = ({ isOpen, onClose, title, children }) => {
-  if (!isOpen) return null;
+function Toast({ toasts }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
-      <div className="relative w-full max-w-lg glass-card rounded-2xl p-6 animate-bounce-in max-h-[90vh] overflow-auto">
-        <div className="flex justify-between items-center mb-4"><h3 className="font-display text-xl font-bold">{title}</h3><button onClick={onClose}><X size={20} /></button></div>
-        {children}
-      </div>
+    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+      {toasts.map(t => (
+        <div key={t.id} className="bg-green-900/50 backdrop-blur px-4 py-3 rounded-xl flex items-center gap-2 text-sm text-green-300 border border-green-700">
+          <Check size={16} /> {t.msg}
+        </div>
+      ))}
     </div>
   );
-};
+}
 
-const Avatar = ({ name, size = 'md' }) => {
-  const initials = name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
-  return <div className={`${size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'} bg-[#7C3AED] rounded-full flex items-center justify-center font-medium`}>{initials.slice(0, 2)}</div>;
-};
-
-const ProgressBar = ({ value, max, label }) => (
-  <div className="w-full"><div className="flex justify-between text-sm mb-1"><span className="text-white/60">{label}</span><span className="text-white">{value}/{max}</span></div><div className="w-full bg-white/10 rounded-full h-2"><div className="h-full bg-gradient-to-r from-[#7C3AED] to-[#a78bfa] rounded-full" style={{ width: `${Math.min((value/max)*100, 100)}%` }} /></div></div>
-);
-
-// ========================================
-// PAGE COMPONENTS
-// ========================================
-
-const LandingPage = ({ onNavigate, onLogin }) => {
-  const [heroText, setHeroText] = useState('Instagram');
-  const texts = ['Instagram', 'TikTok', 'YouTube', 'Twitter/X'];
-  const [currentIndex, setCurrentIndex] = useState(0);
+function LandingPage({ onNavigate }) {
+  const [heroIdx, setHeroIdx] = useState(0);
+  const platforms = ['Instagram', 'TikTok', 'YouTube'];
 
   useEffect(() => {
-    const interval = setInterval(() => setCurrentIndex((prev) => (prev + 1) % texts.length), 2500);
-    return () => clearInterval(interval);
+    const timer = setInterval(() => setHeroIdx(i => (i + 1) % platforms.length), 2000);
+    return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => { setHeroText(texts[currentIndex]); }, [currentIndex]);
-
   return (
-    <div className="min-h-screen gradient-bg">
-      <div className="grain-overlay" />
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-6xl mx-auto px-5 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#7C3AED] rounded-xl flex items-center justify-center glow-violet-sm"><Music size={22} className="text-white" /></div>
-            <span className="font-display text-xl font-bold">MusicCaption<span className="text-[#7C3AED]">AI</span></span>
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900">
+      <nav className="glass-card fixed top-0 w-full z-50 px-4 py-4 border-b border-purple-500/20 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-9 h-9 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center glow-violet-sm">
+            <Music size={20} className="text-white" />
           </div>
-          <div className="flex gap-3">
-            <Button variant="ghost" size="sm" onClick={() => onNavigate('login')}>Masuk</Button>
-            <Button size="sm" onClick={() => onNavigate('login')}>Mulai Gratis</Button>
+          <span className="font-bold text-white text-lg">MusicCaption<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">AI</span></span>
+        </div>
+        <button onClick={() => onNavigate('login')} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">Mulai Gratis</button>
+      </nav>
+
+      <div className="pt-32 pb-16 px-4 text-center">
+        <h1 className="text-6xl font-bold text-white mb-4">
+          Ubah Musikmu Jadi<br />
+          <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">Caption Viral</span>
+        </h1>
+        <p className="text-xl text-gray-300 mb-4">di <span className="text-purple-400 font-bold">{platforms[heroIdx]}</span></p>
+        <p className="text-gray-400 mb-8 max-w-2xl mx-auto">Caption & hashtag bertenaga AI untuk musisi Indonesia</p>
+        <button onClick={() => onNavigate('login')} className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:shadow-lg hover:shadow-purple-500/50 transition">Mulai Gratis</button>
+      </div>
+
+      <footer className="px-4 py-6 text-center text-gray-500 text-sm border-t border-gray-800">
+        © 2026 MusicCaptionAI. Untuk Musisi Indonesia.
+      </footer>
+    </div>
+  );
+}
+
+function LoginPage({ onDemoUser, onDemoAdmin }) {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-900 flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl mx-auto mb-4 flex items-center justify-center glow-violet">
+            <Music size={32} className="text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-white">MusicCaption<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">AI</span></h1>
+          <p className="text-gray-400 text-sm mt-2">Platform caption & hashtag untuk musisi</p>
+        </div>
+
+        <div className="glass-card rounded-2xl p-6 border border-purple-500/20">
+          <input type="email" placeholder="musisi@email.com" className="w-full glass-card px-4 py-3 rounded-lg text-white placeholder-gray-600 border border-purple-500/20 mb-3 outline-none focus:border-purple-500" />
+          <input type="password" placeholder="••••••••" className="w-full glass-card px-4 py-3 rounded-lg text-white placeholder-gray-600 border border-purple-500/20 mb-4 outline-none focus:border-purple-500" />
+          <button onClick={onDemoUser} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-lg font-bold mb-4 transition">Masuk</button>
+
+          <div className="flex items-center gap-3 my-4">
+            <div className="flex-1 h-px bg-gray-700" />
+            <span className="text-gray-500 text-xs">atau</span>
+            <div className="flex-1 h-px bg-gray-700" />
+          </div>
+
+          <div className="flex gap-2">
+            <button onClick={onDemoUser} className="flex-1 glass-card-hover py-2.5 rounded-lg text-xs text-gray-300 font-bold border border-purple-500/20">👤 Demo User</button>
+            <button onClick={onDemoAdmin} className="flex-1 glass-card-hover py-2.5 rounded-lg text-xs text-gray-300 font-bold border border-purple-500/20">⚙️ Demo Admin</button>
           </div>
         </div>
-      </header>
+      </div>
+    </div>
+  );
+}
 
-      <main className="pt-24 pb-10 px-5 max-w-6xl mx-auto">
-        <section className="text-center py-16">
-          <h1 className="font-display text-4xl md:text-6xl font-bold mb-6">
-            Ubah Musikmu Jadi Caption <span className="text-gradient">{heroText}</span>
-          </h1>
-          <p className="text-lg text-white/60 mb-8 max-w-2xl mx-auto">Caption & hashtag bertenaga AI untuk musisi Indonesia</p>
-          <div className="flex justify-center gap-4">
-            <Button size="lg" onClick={() => onNavigate('login')}>Mulai Gratis</Button>
-            <Button variant="secondary" size="lg" onClick={() => {}}>Lihat Cara Kerjanya</Button>
-          </div>
-        </section>
+function DashboardPage({ user, quota, onNavigate }) {
+  return (
+    <div className="px-4 py-6 pb-24">
+      <h1 className="text-3xl font-bold text-white mb-1">Halo, <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{user.name}</span>! 👋</h1>
+      <p className="text-gray-400 text-sm mb-6">Siap buat konten musik yang keren?</p>
+      
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="glass-card rounded-2xl p-4 border border-purple-500/20 bg-gradient-to-br from-purple-900/20 to-transparent">
+          <p className="text-xs text-gray-400 uppercase">Kuota</p>
+          <p className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{quota}</p>
+          <p className="text-xs text-gray-500">Generate tersisa</p>
+        </div>
+        <div className="glass-card rounded-2xl p-4 border border-pink-500/20 bg-gradient-to-br from-pink-900/20 to-transparent">
+          <p className="text-xs text-gray-400 uppercase">Paket</p>
+          <p className="text-2xl font-bold text-pink-400">{user.plan}</p>
+          <button onClick={() => onNavigate('harga')} className="text-xs text-purple-400 hover:underline mt-1">Upgrade →</button>
+        </div>
+      </div>
 
-        <section className="py-12 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[{icon: Zap, title: 'Generator Caption', desc: 'Buat caption viral'}, {icon: Video, title: 'Feed Video', desc: 'Share karya musik'}, {icon: Spark, title: 'AI Inspirasi', desc: 'Dapat ide kreatif'}, {icon: MessageSquare, title: 'DM & Grup', desc: 'Komonitas musisi'}].map((item, i) => (
-            <Card key={i} glow>
-              <item.icon size={32} className="text-[#7C3AED] mb-3" />
-              <h3 className="font-display text-lg font-bold mb-1">{item.title}</h3>
-              <p className="text-sm text-white/60">{item.desc}</p>
-            </Card>
+      <p className="text-xs font-bold text-gray-500 uppercase mb-3">Akses Cepat</p>
+      <div className="grid grid-cols-2 gap-3">
+        {[
+          { icon: Zap, label: 'Generator', page: 'generator', color: 'from-purple-600' },
+          { icon: Play, label: 'Feed', page: 'feed', color: 'from-blue-600' },
+          { icon: Sparkles, label: 'Inspirasi', page: 'inspirasi', color: 'from-pink-600' },
+          { icon: MessageCircle, label: 'Pesan', page: 'pesan', color: 'from-green-600' },
+        ].map((item, i) => (
+          <button key={i} onClick={() => onNavigate(item.page)} className={`glass-card-hover rounded-2xl p-4 flex flex-col items-center gap-2 border border-purple-500/20 bg-gradient-to-br ${item.color}/10 to-transparent`}>
+            <div className={`w-10 h-10 bg-gradient-to-r ${item.color} to-transparent rounded-lg flex items-center justify-center`}>
+              <item.icon size={20} className="text-white" />
+            </div>
+            <span className="text-xs font-bold text-white text-center">{item.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GeneratorPage({ quota, onQuotaDecrease, addToast }) {
+  const [genre, setGenre] = useState('Pop');
+  const [mood, setMood] = useState('Bahagia');
+  const [results, setResults] = useState(null);
+
+  const generate = () => {
+    if (quota <= 0) { addToast('Kuota habis! Upgrade sekarang'); return; }
+    onQuotaDecrease();
+    setResults([
+      { length: 'Pendek', caption: `🎵 ${genre} dengan mood ${mood}! #musik #${genre.toLowerCase()}` },
+      { length: 'Sedang', caption: `🎶 Setiap nada dalam lagu ini mencerminkan mood ${mood.toLowerCase()}. Genre ${genre} yang autentik untuk cerita tulus! ✨ #musik #newmusic` },
+      { length: 'Panjang', caption: `🌟 Ada momen yang tak bisa diungkap kata-kata. Musik ada untuk menjembatani. Lagu ini adalah perjalanan emosional ${mood.toLowerCase()}, dibungkus ${genre} autentik. Setiap bait adalah hati kami! 🎵✨ #musik #newmusic #${genre.toLowerCase()}` },
+    ]);
+    addToast('✨ Caption berhasil dibuat!');
+  };
+
+  return (
+    <div className="px-4 py-6 pb-24">
+      <h1 className="text-2xl font-bold text-white mb-1">Generator Caption AI</h1>
+      <p className="text-gray-400 text-sm mb-6">Buat caption dan hashtag untuk konten musikmu</p>
+
+      <div className="glass-card rounded-2xl p-4 mb-4 border border-purple-500/20">
+        <p className="font-bold text-white text-sm mb-4">⚙️ Pengaturan</p>
+
+        <div className="mb-4">
+          <label className="text-xs text-gray-400 mb-2 block">Genre Musik</label>
+          <select value={genre} onChange={e => setGenre(e.target.value)} className="w-full glass-card px-4 py-3 rounded-lg text-white border border-purple-500/20 outline-none focus:border-purple-500">
+            {GENRES.map(g => <option key={g} className="bg-gray-900">{g}</option>)}
+          </select>
+        </div>
+
+        <div className="mb-4">
+          <label className="text-xs text-gray-400 mb-2 block">Mood / Suasana</label>
+          <select value={mood} onChange={e => setMood(e.target.value)} className="w-full glass-card px-4 py-3 rounded-lg text-white border border-purple-500/20 outline-none focus:border-purple-500">
+            {MOODS.map(m => <option key={m} className="bg-gray-900">{m}</option>)}
+          </select>
+        </div>
+
+        <button onClick={generate} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 py-3 rounded-lg font-bold text-white transition flex items-center justify-center gap-2">
+          <Zap size={16} /> Generate ({quota} tersisa)
+        </button>
+      </div>
+
+      {results && (
+        <div className="flex flex-col gap-3">
+          {results.map((r, i) => (
+            <div key={i} className="glass-card rounded-2xl p-4 border border-purple-500/20 bg-gradient-to-br from-purple-900/10 to-transparent">
+              <p className="text-xs text-purple-400 font-bold uppercase mb-2">{r.length}</p>
+              <p className="text-sm text-gray-300 mb-3">{r.caption}</p>
+              <button onClick={() => { navigator.clipboard.writeText(r.caption); addToast('📋 Disalin!'); }} className="w-full glass-card-hover py-2 text-xs text-gray-300 rounded-lg border border-purple-500/20">Salin Semua</button>
+            </div>
           ))}
-        </section>
+        </div>
+      )}
+    </div>
+  );
+}
 
-        <section className="py-12">
-          <h2 className="font-display text-2xl font-bold text-center mb-8">Apa Kata Musisi</h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            {DUMMY_TESTIMONI.map((item) => (
-              <Card key={item.id}>
-                <p className="text-white/80 mb-4">"{item.text}"</p>
-                <div className="flex items-center gap-3">
-                  <Avatar name={item.name} size="sm" />
-                  <div><p className="font-medium text-sm">{item.name}</p><p className="text-xs text-white/60">{item.role}</p></div>
-                </div>
-              </Card>
-            ))}
+function FeedPage({ addToast }) {
+  const [liked, setLiked] = useState({});
+
+  return (
+    <div className="px-4 py-6 pb-24">
+      <h1 className="text-2xl font-bold text-white mb-4">Feed Video 🎬</h1>
+      {FEED_POSTS.map(post => (
+        <div key={post.id} className="glass-card rounded-2xl overflow-hidden mb-4 border border-purple-500/20">
+          <div className="p-3 flex items-center gap-2">
+            <Avatar name={post.user} size={36} />
+            <div className="flex-1"><p className="font-bold text-white text-sm">{post.user}</p><p className="text-xs text-gray-400">{post.handle}</p></div>
           </div>
-        </section>
+          <div className="bg-gradient-to-br from-purple-900 to-pink-900 h-40 flex items-center justify-center">
+            <Play size={40} className="text-white/50" fill="white" />
+          </div>
+          <div className="p-3">
+            <p className="text-sm text-gray-300 mb-2">{post.caption}</p>
+            <div className="flex items-center gap-4">
+              <button onClick={() => { setLiked(p => ({...p, [post.id]: !p[post.id]})); if(!liked[post.id]) addToast('❤️ Disukai!'); }} className="flex items-center gap-1 text-sm hover:text-red-500 transition">
+                <Heart size={16} className={liked[post.id] ? 'text-red-500 fill-red-500' : ''} /> {post.likes + (liked[post.id] ? 1 : 0)}
+              </button>
+              <button className="flex items-center gap-1 text-sm text-gray-400 hover:text-white">
+                <MessageCircle size={16} /> {post.comments}
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function InspirasiPage({ addToast }) {
+  const [genre, setGenre] = useState('Indie');
+  const [result, setResult] = useState(null);
+
+  return (
+    <div className="px-4 py-6 pb-24">
+      <h1 className="text-2xl font-bold text-white mb-1">Mode AI Inspirasi</h1>
+      <p className="text-gray-400 text-sm mb-6">Dapatkan inspirasi kreatif dari AI</p>
+
+      <div className="glass-card rounded-2xl p-4 mb-4 border border-purple-500/20">
+        <label className="text-xs text-gray-400 mb-2 block">Pilih Genre</label>
+        <select value={genre} onChange={e => setGenre(e.target.value)} className="w-full glass-card px-4 py-3 rounded-lg text-white border border-purple-500/20 mb-4 outline-none focus:border-purple-500">
+          {GENRES.map(g => <option key={g} className="bg-gray-900">{g}</option>)}
+        </select>
+        <button onClick={() => setResult({ titles: ['Judul 1', 'Judul 2', 'Judul 3'], mood: 'Melankolis', concept: 'Shot sinematik malam hari' })} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2">
+          <Sparkles size={16} /> Dapatkan Inspirasi
+        </button>
+      </div>
+      {result && (
+        <div className="space-y-3">
+          {[
+            { label: '🎵 Ide Judul', value: result.titles.join(', ') },
+            { label: '🌊 Mood', value: result.mood },
+            { label: '🎬 Konsep Visual', value: result.concept },
+          ].map((item, i) => (
+            <div key={i} className="glass-card rounded-2xl p-4 border border-purple-500/20 bg-gradient-to-br from-pink-900/10 to-transparent">
+              <p className="text-xs text-pink-400 font-bold mb-2">{item.label}</p>
+              <p className="text-sm text-gray-300">{item.value}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PesanPage({ addToast }) {
+  const [activeChat, setActiveChat] = useState(null);
+  const [dmChats] = useState(DM_CHATS);
+
+  if (activeChat) {
+    return (
+      <div className="flex flex-col h-screen">
+        <div className="glass-card px-4 py-3 flex items-center gap-3 border-b border-purple-500/20 sticky top-0">
+          <button onClick={() => setActiveChat(null)}><ArrowLeft size={20} className="text-gray-400" /></button>
+          <p className="text-white font-bold">{activeChat.name}</p>
+        </div>
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 scrollbar-hide">
+          {activeChat.messages.map(msg => (
+            <div key={msg.id} className={`flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`px-4 py-2 rounded-2xl ${msg.from === 'me' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' : 'glass-card text-gray-300 border border-purple-500/20'}`}>
+                <p className="text-sm">{msg.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="glass-card px-4 py-3 flex gap-2 border-t border-purple-500/20">
+          <input placeholder="Ketik pesan..." className="flex-1 glass-card px-3 py-2 rounded-lg text-white border border-purple-500/20 outline-none focus:border-purple-500" />
+          <button className="bg-gradient-to-r from-purple-600 to-pink-600 w-9 h-9 rounded-lg flex items-center justify-center text-white"><Send size={16} /></button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-4 py-6 pb-20">
+      <h1 className="text-2xl font-bold text-white mb-4">💬 Pesan</h1>
+      {dmChats.map(item => (
+        <button key={item.id} onClick={() => setActiveChat(item)} className="glass-card-hover rounded-xl p-3 flex gap-3 w-full mb-2 border border-purple-500/20">
+          <Avatar name={item.name} />
+          <div className="flex-1 text-left">
+            <p className="text-white font-bold">{item.name}</p>
+            <p className="text-xs text-gray-400">{item.lastMsg}</p>
+          </div>
+          {item.unread > 0 && <div className="bg-gradient-to-r from-red-600 to-pink-600 rounded-full w-5 h-5 text-white text-xs flex items-center justify-center font-bold">{item.unread}</div>}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function HargaPage({ currentPlan, addToast }) {
+  return (
+    <div className="px-4 py-6 pb-20 text-center">
+      <h1 className="text-3xl font-bold text-white mb-2">💳 Pilih Paket</h1>
+      <p className="text-gray-400 text-sm mb-6">Upgrade kapan saja sesuai kebutuhan</p>
+      {PACKAGES.map(pkg => (
+        <div key={pkg.id} className={`glass-card rounded-2xl p-4 mb-4 border ${pkg.popular ? 'border-purple-500/50 bg-gradient-to-br from-purple-900/20' : 'border-purple-500/20'}`}>
+          {pkg.popular && <span className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs px-3 py-1 rounded-full font-bold mb-2">⭐ Populer</span>}
+          <p className="font-bold text-white text-lg">{pkg.name}</p>
+          <p className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Rp {pkg.price.toLocaleString('id-ID')}</p>
+          <p className="text-xs text-gray-400 mb-3">{pkg.gen} generate/bulan</p>
+          <button onClick={() => addToast(`${pkg.name} dipilih! 🎉`)} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 rounded-lg font-bold text-sm">Pilih Paket</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function App() {
+  const [page, setPage] = useState('landing');
+  const [user, setUser] = useState(null);
+  const [quota, setQuota] = useState(10);
+  const [toasts, setToasts] = useState([]);
+  const [activePage, setActivePage] = useState('dashboard');
+
+  const addToast = (msg) => {
+    const id = Date.now();
+    setToasts(p => [...p, { id, msg }]);
+    setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3000);
+  };
+
+  const loginAsDemo = () => {
+    setUser({ name: 'Demo', plan: 'Starter' });
+    setPage('app');
+  };
+
+  const loginAsAdmin = () => {
+    setUser({ name: 'Admin', plan: 'Pro' });
+    setPage('app');
+  };
+
+  const logout = () => {
+    setUser(null);
+    setPage('landing');
+  };
+
+  const NAV = [
+    { id: 'dashboard', icon: Home, label: 'Home' },
+    { id: 'generator', icon: Zap, label: 'Generate' },
+    { id: 'feed', icon: Play, label: 'Feed' },
+    { id: 'inspirasi', icon: Sparkles, label: 'Inspirasi' },
+    { id: 'pesan', icon: MessageCircle, label: 'Pesan' },
+    { id: 'harga', icon: CreditCard, label: 'Harga' },
+  ];
+
+  if (page === 'landing') return <><LandingPage onNavigate={setPage} /><Toast toasts={toasts} /></>;
+  if (page === 'login') return <><LoginPage onDemoUser={loginAsDemo} onDemoAdmin={loginAsAdmin} /><Toast toasts={toasts} /></>;
+
+  const pages = {
+    dashboard: <DashboardPage user={user} quota={quota} onNavigate={setActivePage} />,
+    generator: <GeneratorPage quota={quota} onQuotaDecrease={() => setQuota(q => Math.max(0, q - 1))} addToast={addToast} />,
+    feed: <FeedPage addToast={addToast} />,
+    inspirasi: <InspirasiPage addToast={addToast} />,
+    pesan: <PesanPage addToast={addToast} />,
+    harga: <HargaPage currentPlan={user?.plan} addToast={addToast} />,
+  };
+
+  return (
+    <div className="bg-black min-h-screen">
+      <Toast toasts={toasts} />
+      <div className="glass-card sticky top-0 z-40 px-4 py-3 border-b border-purple-500/20 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <Music size={18} className="text-purple-400" />
+          <span className="text-white font-bold text-sm">MusicCaption<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">AI</span></span>
+        </div>
+        <div className="flex gap-3 items-center">
+          <div className="glass-card px-2.5 py-1 rounded text-xs text-white border border-purple-500/20">
+            <Zap size={12} className="inline mr-1" />{quota}
+          </div>
+          <span className="text-xs bg-gradient-to-r from-purple-600 to-pink-600 text-white px-2.5 py-1 rounded font-bold">{user?.plan}</span>
+          <button onClick={logout} className="text-gray-400 hover:text-white"><LogOut size={16} /></button>
+        </div>
+      </div>
+
+      <main className="pb-20">
+        {pages[activePage]}
       </main>
 
-      <footer
+      <nav className="fixed bottom-0 left-0 right-0 glass-card border-t border-purple-500/20 flex justify-around">
+        {NAV.map(item => (
+          <button key={item.id} onClick={() => setActivePage(item.id)} className={`flex flex-col items-center gap-1 px-3 py-2 transition ${activePage === item.id ? 'text-purple-400' : 'text-gray-500 hover:text-gray-300'}`}>
+            <item.icon size={20} />
+            <span className="text-[10px] font-bold">{item.label}</span>
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+              }
