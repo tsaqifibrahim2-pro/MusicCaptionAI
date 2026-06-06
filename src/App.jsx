@@ -23,9 +23,10 @@ const DM_CHATS = [
 ];
 
 const PACKAGES = [
-  { id: 'gratis', name: 'Gratis', price: 0, gen: '5', features: ['5 generate/bulan', 'Caption IG & TikTok'] },
-  { id: 'starter', name: 'Starter', price: 29000, gen: '50', popular: true, features: ['50 generate/bulan', 'Semua platform'] },
-  { id: 'pro', name: 'Pro', price: 79000, gen: '200', features: ['200 generate/bulan', 'Unlimited Inspirasi'] },
+  { id: 'gratis', name: 'Gratis', price: 0, gen: '5', features: ['5 generate/bulan', 'DM & Grup unlimited', 'Ada iklan'] },
+  { id: 'standard', name: 'Standard', price: 30000, gen: '50', features: ['50 generate/bulan', 'DM & Grup unlimited', 'Tanpa iklan'] },
+  { id: 'pro', name: 'Pro', price: 50000, gen: '200', popular: true, features: ['200 generate/bulan', 'Inspirasi unlimited', 'Badge Pro', 'Tanpa iklan'] },
+  { id: 'ultra', name: 'Ultra Pro', price: 99000, gen: '∞', features: ['Unlimited semua', 'Caption eksklusif YouTube & Twitter/X', 'Badge Ultra Pro', 'Support prioritas'] },
 ];
 
 function Avatar({ name, size = 36 }) {
@@ -351,7 +352,7 @@ function HargaPage({ currentPlan, addToast }) {
 export default function App() {
   const [page, setPage] = useState('landing');
   const [user, setUser] = useState(null);
-  const [quota, setQuota] = useState(10);
+  const [quota, setQuota] = useState(3);
   const [toasts, setToasts] = useState([]);
   const [activePage, setActivePage] = useState('dashboard');
 
@@ -362,12 +363,14 @@ export default function App() {
   };
 
   const loginAsDemo = () => {
-    setUser({ name: 'Demo', plan: 'Starter' });
+    setUser({ name: 'Demo', plan: 'Gratis' });
+    setQuota(3);
     setPage('app');
   };
 
   const loginAsAdmin = () => {
-    setUser({ name: 'Admin', plan: 'Pro' });
+    setUser({ name: 'Admin', plan: 'Ultra Pro' });
+    setQuota(999);
     setPage('app');
   };
 
@@ -428,4 +431,4 @@ export default function App() {
       </nav>
     </div>
   );
-              }
+      }
