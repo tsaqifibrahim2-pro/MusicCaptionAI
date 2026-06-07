@@ -3,11 +3,29 @@ import {
   Music, Home, Zap, Play, MessageCircle, CreditCard,
   Sparkles, Heart, Share2, Copy, Check, X, LogOut,
   Shield, Hash, RefreshCw, ChevronRight, ArrowLeft,
-  Send, Star, AlertCircle
+  Send, Star, AlertCircle, User, Upload, Trash2
 } from 'lucide-react';
 
 const GENRES = ['Pop', 'R&B', 'Hip-Hop', 'Indie', 'Jazz', 'Electronic', 'Folk', 'Rock', 'Classical', 'Dangdut', 'Koplo'];
 const MOODS = ['Bahagia', 'Melankolis', 'Energetik', 'Romantis', 'Motivasi', 'Santai', 'Sedih', 'Nostalgik'];
+
+const STYLES = ['Melankolis', 'Energetik', 'Romantis', 'Motivasi', 'Santai', 'Sedih', 'Nostalgik', 'Marah', 'Ceria', 'Tenang', 'Misterius', 'Heroik', 'Sederhana', 'Kompleks', 'Modern', 'Klasik', 'Jazzy', 'Bluesy', 'Groovy', 'Ethereal', 'Dark', 'Bright', 'Calm', 'Intense', 'Playful', 'Serious', 'Hopeful', 'Despair', 'Funky', 'Smooth'];
+
+const AI_CHARACTERS = [
+  { id: 'ai-1', name: 'Alex', gender: 'M', emoji: '🤖' },
+  { id: 'ai-2', name: 'Ryan', gender: 'M', emoji: '🧠' },
+  { id: 'ai-3', name: 'Chris', gender: 'M', emoji: '⚡' },
+  { id: 'ai-4', name: 'Jordan', gender: 'M', emoji: '🌐' },
+  { id: 'ai-5', name: 'Morgan', gender: 'M', emoji: '💻' },
+];
+
+const CARTOON_CHARACTERS = [
+  { id: 'cartoon-1', name: 'Luna', gender: 'F', emoji: '🌙' },
+  { id: 'cartoon-2', name: 'Sakura', gender: 'F', emoji: '🌸' },
+  { id: 'cartoon-3', name: 'Mia', gender: 'F', emoji: '✨' },
+  { id: 'cartoon-4', name: 'Bella', gender: 'F', emoji: '💎' },
+  { id: 'cartoon-5', name: 'Sofia', gender: 'F', emoji: '🎀' },
+];
 
 const FEED_POSTS = [
   { id: 1, user: 'Rina Kusuma', handle: '@rinakusuma', caption: '🎵 Single terbaru sudah rilis! #musikindonesia', likes: 284, comments: 42 },
@@ -90,10 +108,15 @@ function LandingPage({ onNavigate }) {
 
 function LoginPage({ onDemoUser, onDemoAdmin }) {
   const [form, setForm] = useState({ email: '', password: '' });
+  const [tab, setTab] = useState('masuk');
 
   const handleLogin = () => {
     if (!form.email.trim()) { alert('Email harus diisi!'); return; }
     if (!form.password.trim()) { alert('Password harus diisi!'); return; }
+    onDemoUser();
+  };
+
+  const handleGoogleLogin = () => {
     onDemoUser();
   };
 
@@ -109,9 +132,23 @@ function LoginPage({ onDemoUser, onDemoAdmin }) {
         </div>
 
         <div className="glass-card rounded-2xl p-6 border border-purple-500/20">
+          <div className="flex gap-2 mb-6 rounded-lg bg-gray-900 p-1">
+            {['masuk', 'daftar'].map(t => (
+              <button key={t} onClick={() => setTab(t)} className={`flex-1 py-2 rounded-lg font-bold text-sm transition ${tab === t ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' : 'text-gray-400 hover:text-white'}`}>
+                {t === 'masuk' ? 'Masuk' : 'Daftar'}
+              </button>
+            ))}
+          </div>
+
           <input type="email" placeholder="musisi@email.com" className="w-full glass-card px-4 py-3 rounded-lg text-white placeholder-gray-600 border border-purple-500/20 mb-3 outline-none focus:border-purple-500" value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
           <input type="password" placeholder="••••••••" className="w-full glass-card px-4 py-3 rounded-lg text-white placeholder-gray-600 border border-purple-500/20 mb-4 outline-none focus:border-purple-500" value={form.password} onChange={e => setForm({...form, password: e.target.value})} onKeyDown={e => e.key === 'Enter' && handleLogin()} />
-          <button onClick={handleLogin} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-lg font-bold mb-4 transition">Masuk</button>
+          <button onClick={handleLogin} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-lg font-bold mb-4 transition">
+            {tab === 'masuk' ? 'Masuk' : 'Daftar'}
+          </button>
+
+          <button onClick={handleGoogleLogin} className="w-full glass-card-hover border border-purple-500/20 text-white py-3 rounded-lg font-bold mb-4 transition">
+            🔐 Masuk dengan Google
+          </button>
 
           <div className="flex items-center gap-3 my-4">
             <div className="flex-1 h-px bg-gray-700" />
@@ -119,10 +156,7 @@ function LoginPage({ onDemoUser, onDemoAdmin }) {
             <div className="flex-1 h-px bg-gray-700" />
           </div>
 
-          <div className="flex gap-2">
-            <button onClick={onDemoUser} className="flex-1 glass-card-hover py-2.5 rounded-lg text-xs text-gray-300 font-bold border border-purple-500/20">👤 Demo User</button>
-            <button onClick={onDemoAdmin} className="flex-1 glass-card-hover py-2.5 rounded-lg text-xs text-gray-300 font-bold border border-purple-500/20">⚙️ Demo Admin</button>
-          </div>
+          <button onClick={onDemoAdmin} className="w-full glass-card-hover py-2.5 rounded-lg text-xs text-gray-300 font-bold border border-purple-500/20">⚙️ Khusus Admin</button>
         </div>
       </div>
     </div>
@@ -247,7 +281,10 @@ function FeedPage({ addToast }) {
 
   return (
     <div className="px-4 py-6 pb-24">
-      <h1 className="text-2xl font-bold text-white mb-4">Feed Video 🎬</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold text-white">Feed Video 🎬</h1>
+        <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-2 rounded-lg text-xs font-bold">⬆️ Upload</button>
+      </div>
       {FEED_POSTS.map(post => (
         <div key={post.id} className="glass-card rounded-2xl overflow-hidden mb-4 border border-purple-500/20">
           <div className="p-3 flex items-center gap-2">
@@ -274,9 +311,28 @@ function FeedPage({ addToast }) {
   );
 }
 
-function InspirasiPage({ addToast }) {
+function InspirasiPage({ quota, onQuotaDecrease, addToast }) {
   const [genre, setGenre] = useState('Indie');
   const [result, setResult] = useState(null);
+  const [showCustom, setShowCustom] = useState(false);
+  const [customLyric, setCustomLyric] = useState('');
+  const [selectedStyle, setSelectedStyle] = useState('Melankolis');
+
+  const generateInspirasi = () => {
+    if (quota <= 0) { addToast('Kuota habis!'); return; }
+    onQuotaDecrease();
+    setResult({ titles: ['Judul 1', 'Judul 2', 'Judul 3'], mood: selectedStyle, concept: 'Shot sinematik malam hari' });
+    addToast('✨ Inspirasi berhasil dibuat!');
+  };
+
+  const generateCustom = () => {
+    if (!customLyric.trim()) { addToast('Tulis tema lirik dulu!'); return; }
+    if (quota <= 0) { addToast('Kuota habis!'); return; }
+    onQuotaDecrease();
+    setResult({ titles: ['Custom Judul 1', 'Custom Judul 2', 'Custom Judul 3'], mood: selectedStyle, concept: `Lirik dengan tema: ${customLyric}` });
+    setShowCustom(false);
+    addToast('✨ Lirik custom dibuat!');
+  };
 
   return (
     <div className="px-4 py-6 pb-24">
@@ -285,19 +341,41 @@ function InspirasiPage({ addToast }) {
 
       <div className="glass-card rounded-2xl p-4 mb-4 border border-purple-500/20">
         <label className="text-xs text-gray-400 mb-2 block">Pilih Genre</label>
-        <select value={genre} onChange={e => setGenre(e.target.value)} className="w-full glass-card px-4 py-3 rounded-lg text-white border border-purple-500/20 mb-4 outline-none focus:border-purple-500">
+        <select value={genre} onChange={e => setGenre(e.target.value)} className="w-full glass-card px-4 py-3 rounded-lg text-white border border-purple-500/20 mb-3 outline-none focus:border-purple-500">
           {GENRES.map(g => <option key={g} className="bg-gray-900">{g}</option>)}
         </select>
-        <button onClick={() => setResult({ titles: ['Judul 1', 'Judul 2', 'Judul 3'], mood: 'Melankolis', concept: 'Shot sinematik malam hari' })} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2">
-          <Sparkles size={16} /> Dapatkan Inspirasi
-        </button>
+
+        <label className="text-xs text-gray-400 mb-2 block">Pilih Gaya/Tone</label>
+        <select value={selectedStyle} onChange={e => setSelectedStyle(e.target.value)} className="w-full glass-card px-4 py-3 rounded-lg text-white border border-purple-500/20 mb-4 outline-none focus:border-purple-500">
+          {STYLES.map(s => <option key={s} className="bg-gray-900">{s}</option>)}
+        </select>
+
+        <div className="flex gap-2">
+          <button onClick={generateInspirasi} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 text-sm">
+            <Sparkles size={16} /> Inspirasi ({quota})
+          </button>
+          <button onClick={() => setShowCustom(!showCustom)} className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 rounded-lg font-bold text-sm">
+            ✍️ Custom
+          </button>
+        </div>
       </div>
+
+      {showCustom && (
+        <div className="glass-card rounded-2xl p-4 mb-4 border border-blue-500/20 bg-gradient-to-br from-blue-900/10 to-transparent">
+          <label className="text-xs text-blue-400 font-bold mb-2 block">Buat Lirik Custom</label>
+          <textarea value={customLyric} onChange={e => setCustomLyric(e.target.value)} placeholder="Tulis tema atau konsep lirik kamu..." className="w-full glass-card px-4 py-3 rounded-lg text-white border border-blue-500/20 mb-3 outline-none focus:border-blue-500 h-24 resize-none" />
+          <button onClick={generateCustom} className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-2 rounded-lg font-bold text-sm">
+            Generate Lirik
+          </button>
+        </div>
+      )}
+
       {result && (
         <div className="space-y-3">
           {[
             { label: '🎵 Ide Judul', value: result.titles.join(', ') },
-            { label: '🌊 Mood', value: result.mood },
-            { label: '🎬 Konsep Visual', value: result.concept },
+            { label: '🌊 Gaya/Mood', value: result.mood },
+            { label: '🎬 Konsep', value: result.concept },
           ].map((item, i) => (
             <div key={i} className="glass-card rounded-2xl p-4 border border-purple-500/20 bg-gradient-to-br from-pink-900/10 to-transparent">
               <p className="text-xs text-pink-400 font-bold mb-2">{item.label}</p>
@@ -378,6 +456,90 @@ function HargaPage({ currentPlan, addToast }) {
           <button onClick={() => addToast(`${pkg.name} dipilih! 🎉`)} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 rounded-lg font-bold text-sm">Pilih Paket</button>
         </div>
       ))}
+    </div>
+  );
+}
+
+function ProfilePage({ user, addToast }) {
+  const [profilePhoto, setProfilePhoto] = useState(null);
+  const [showCharacterPicker, setShowCharacterPicker] = useState(false);
+  const [songs, setSongs] = useState([
+    { id: 1, title: 'Lagu Pertama' },
+    { id: 2, title: 'Lagu Kedua' },
+  ]);
+  const [follower] = useState(1250);
+  const [following] = useState(342);
+
+  const deleteSong = (id) => {
+    setSongs(prev => prev.filter(s => s.id !== id));
+    addToast('❌ Lagu dihapus!');
+  };
+
+  const selectCharacter = (char) => {
+    setProfilePhoto(char.emoji);
+    setShowCharacterPicker(false);
+    addToast('✅ Foto profil berhasil diubah!');
+  };
+
+  return (
+    <div className="px-4 py-6 pb-24">
+      <h1 className="text-2xl font-bold text-white mb-6">👤 Profil</h1>
+
+      <div className="glass-card rounded-2xl p-6 border border-purple-500/20 text-center mb-6">
+        <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl border-4 border-purple-500">
+          {profilePhoto || '👤'}
+        </div>
+        <p className="text-xl font-bold text-white mb-4">{user.name}</p>
+        
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div><p className="text-2xl font-bold text-purple-400">{follower}</p><p className="text-xs text-gray-400">Follower</p></div>
+          <div><p className="text-2xl font-bold text-pink-400">{following}</p><p className="text-xs text-gray-400">Following</p></div>
+        </div>
+
+        <button onClick={() => setShowCharacterPicker(!showCharacterPicker)} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 rounded-lg font-bold text-sm">
+          {showCharacterPicker ? 'Tutup Pilihan' : '🖼️ Pilih Foto Profil'}
+        </button>
+      </div>
+
+      {showCharacterPicker && (
+        <div className="glass-card rounded-2xl p-4 mb-6 border border-purple-500/20">
+          <p className="text-sm font-bold text-white mb-3">🤖 Karakter AI (Laki-laki)</p>
+          <div className="grid grid-cols-5 gap-2 mb-6">
+            {AI_CHARACTERS.map(char => (
+              <button key={char.id} onClick={() => selectCharacter(char)} className="glass-card-hover p-2 rounded-lg border border-purple-500/20 text-2xl">
+                {char.emoji}
+              </button>
+            ))}
+          </div>
+
+          <p className="text-sm font-bold text-white mb-3">💎 Karakter Kartun (Perempuan)</p>
+          <div className="grid grid-cols-5 gap-2">
+            {CARTOON_CHARACTERS.map(char => (
+              <button key={char.id} onClick={() => selectCharacter(char)} className="glass-card-hover p-2 rounded-lg border border-purple-500/20 text-2xl">
+                {char.emoji}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="glass-card rounded-2xl p-4 border border-purple-500/20">
+        <p className="text-sm font-bold text-white mb-4">🎵 Hasil Karya Lagu</p>
+        {songs.length === 0 ? (
+          <p className="text-xs text-gray-400 text-center py-4">Belum ada lagu</p>
+        ) : (
+          <div className="space-y-2">
+            {songs.map(song => (
+              <div key={song.id} className="flex items-center justify-between bg-gray-900/50 p-3 rounded-lg">
+                <p className="text-sm text-gray-300">{song.title}</p>
+                <button onClick={() => deleteSong(song.id)} className="text-red-400 hover:text-red-300">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -522,7 +684,7 @@ export default function App() {
     { id: 'feed', icon: Play, label: 'Feed' },
     { id: 'inspirasi', icon: Sparkles, label: 'Inspirasi' },
     { id: 'pesan', icon: MessageCircle, label: 'Pesan' },
-    { id: 'harga', icon: CreditCard, label: 'Harga' },
+    { id: 'profil', icon: User, label: 'Profil' },
   ];
 
   if (page === 'landing') return <><LandingPage onNavigate={setPage} /><Toast toasts={toasts} /></>;
@@ -534,8 +696,9 @@ export default function App() {
     dashboard: <DashboardPage user={user} quota={quota} isAdmin={isAdmin} onNavigate={setActivePage} />,
     generator: <GeneratorPage quota={quota} onQuotaDecrease={() => setQuota(q => Math.max(0, q - 1))} addToast={addToast} />,
     feed: <FeedPage addToast={addToast} />,
-    inspirasi: <InspirasiPage addToast={addToast} />,
+    inspirasi: <InspirasiPage quota={quota} onQuotaDecrease={() => setQuota(q => Math.max(0, q - 1))} addToast={addToast} />,
     pesan: <PesanPage addToast={addToast} />,
+    profil: <ProfilePage user={user} addToast={addToast} />,
     harga: <HargaPage currentPlan={user?.plan} addToast={addToast} />,
     admin: <AdminDashboard addToast={addToast} />,
   };
@@ -558,7 +721,7 @@ export default function App() {
       </div>
 
       <main className="pb-20">
-        {pages[activePage]}
+        {activePage === 'harga' ? <HargaPage currentPlan={user?.plan} addToast={addToast} /> : pages[activePage]}
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 glass-card border-t border-purple-500/20 flex justify-around">
@@ -568,7 +731,11 @@ export default function App() {
             <span className="text-[10px] font-bold">{item.label}</span>
           </button>
         ))}
+        <button onClick={() => setActivePage('harga')} className={`flex flex-col items-center gap-1 px-3 py-2 transition ${activePage === 'harga' ? 'text-purple-400' : 'text-gray-500 hover:text-gray-300'}`}>
+          <CreditCard size={20} />
+          <span className="text-[10px] font-bold">Harga</span>
+        </button>
       </nav>
     </div>
   );
-              }
+        }
