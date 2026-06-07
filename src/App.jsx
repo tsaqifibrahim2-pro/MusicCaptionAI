@@ -3,10 +3,10 @@ import {
   Music, Home, Zap, Play, MessageCircle, CreditCard,
   Sparkles, Heart, Share2, Copy, Check, X, LogOut,
   Shield, Hash, RefreshCw, ChevronRight, ArrowLeft,
-  Send, Star, AlertCircle, User, Upload, Trash2
+  Send, Star, AlertCircle, User, Upload, Trash2, MessageSquare
 } from 'lucide-react';
 
-const GENRES = ['Pop', 'R&B', 'Hip-Hop', 'Indie', 'Jazz', 'Electronic', 'Folk', 'Rock', 'Classical', 'Dangdut', 'Koplo'];
+const GENRES = ['Pop', 'R&B', 'Hip-Hop', 'Indie', 'Jazz', 'Electronic', 'Folk', 'Rock', 'Classical', 'Dangdut', 'Koplo', 'Reggae', 'Country', 'Metal', 'Punk', 'Soul', 'Funk', 'Disco', 'House', 'Techno', 'Dubstep', 'Trap', 'K-Pop', 'Anime OST', 'Lo-Fi', 'Ambient', 'Synthwave', 'Afrobeat', 'Bollywood', 'Salsa'];
 const MOODS = ['Bahagia', 'Melankolis', 'Energetik', 'Romantis', 'Motivasi', 'Santai', 'Sedih', 'Nostalgik'];
 
 const STYLES = ['Melankolis', 'Energetik', 'Romantis', 'Motivasi', 'Santai', 'Sedih', 'Nostalgik', 'Marah', 'Ceria', 'Tenang', 'Misterius', 'Heroik', 'Sederhana', 'Kompleks', 'Modern', 'Klasik', 'Jazzy', 'Bluesy', 'Groovy', 'Ethereal', 'Dark', 'Bright', 'Calm', 'Intense', 'Playful', 'Serious', 'Hopeful', 'Despair', 'Funky', 'Smooth'];
@@ -31,13 +31,6 @@ const FEED_POSTS = [
   { id: 1, user: 'Rina Kusuma', handle: '@rinakusuma', caption: '🎵 Single terbaru sudah rilis! #musikindonesia', likes: 284, comments: 42 },
   { id: 2, user: 'Dimas Pratama', handle: '@dimaspratama', caption: 'Latihan gitar acoustic 🎸 #acoustic', likes: 156, comments: 28 },
   { id: 3, user: 'Studio Nada', handle: '@studionada', caption: 'Behind the scenes! 🎙️✨ #studio', likes: 521, comments: 89 },
-];
-
-const DM_CHATS = [
-  { id: 1, name: 'Rina Kusuma', online: true, unread: 2, lastMsg: 'Keren banget!', messages: [
-    { id: 1, from: 'them', text: 'Hei! Udah denger lagu baru?', time: '10:00' },
-    { id: 2, from: 'me', text: 'Belum nih', time: '10:01' },
-  ]},
 ];
 
 const PACKAGES = [
@@ -147,7 +140,7 @@ function LoginPage({ onDemoUser, onDemoAdmin }) {
           </button>
 
           <button onClick={handleGoogleLogin} className="w-full glass-card-hover border border-purple-500/20 text-white py-3 rounded-lg font-bold mb-4 transition">
-            🔐 Masuk dengan Google
+            🔐 Masuk dengan Google (10x/bulan)
           </button>
 
           <div className="flex items-center gap-3 my-4">
@@ -156,7 +149,7 @@ function LoginPage({ onDemoUser, onDemoAdmin }) {
             <div className="flex-1 h-px bg-gray-700" />
           </div>
 
-          <button onClick={onDemoAdmin} className="w-full glass-card-hover py-2.5 rounded-lg text-xs text-gray-300 font-bold border border-purple-500/20">⚙️ Khusus Admin</button>
+          <button onClick={onDemoAdmin} className="w-full glass-card-hover py-2.5 rounded-lg text-xs text-gray-300 font-bold border border-purple-500/20">⚙️ Khusus Admin (Google)</button>
         </div>
       </div>
     </div>
@@ -267,7 +260,7 @@ function GeneratorPage({ quota, onQuotaDecrease, addToast }) {
             <div key={i} className="glass-card rounded-2xl p-4 border border-purple-500/20 bg-gradient-to-br from-purple-900/10 to-transparent">
               <p className="text-xs text-purple-400 font-bold uppercase mb-2">{r.length}</p>
               <p className="text-sm text-gray-300 mb-3">{r.caption}</p>
-              <button onClick={() => { navigator.clipboard.writeText(r.caption); }} className="w-full glass-card-hover py-2 text-xs text-gray-300 rounded-lg border border-purple-500/20">Salin Semua</button>
+              <button onClick={() => { navigator.clipboard.writeText(r.caption); addToast('📋 Disalin!'); }} className="w-full glass-card-hover py-2 text-xs text-gray-300 rounded-lg border border-purple-500/20">Salin Semua</button>
             </div>
           ))}
         </div>
@@ -276,16 +269,15 @@ function GeneratorPage({ quota, onQuotaDecrease, addToast }) {
   );
 }
 
-function FeedPage({ addToast }) {
+function FeedPage({ addToast, feedPosts, setFeedPosts }) {
   const [liked, setLiked] = useState({});
 
   return (
     <div className="px-4 py-6 pb-24">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-white">Feed Video 🎬</h1>
-        <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-2 rounded-lg text-xs font-bold">⬆️ Upload</button>
       </div>
-      {FEED_POSTS.map(post => (
+      {feedPosts.map(post => (
         <div key={post.id} className="glass-card rounded-2xl overflow-hidden mb-4 border border-purple-500/20">
           <div className="p-3 flex items-center gap-2">
             <Avatar name={post.user} size={36} />
@@ -311,11 +303,11 @@ function FeedPage({ addToast }) {
   );
 }
 
-function InspirasiPage({ quota, onQuotaDecrease, addToast }) {
+function InspirasiPage({ quota, onQuotaDecrease, addToast, feedPosts, setFeedPosts }) {
   const [genre, setGenre] = useState('Indie');
   const [result, setResult] = useState(null);
   const [showCustom, setShowCustom] = useState(false);
-  const [customLyric, setCustomLyric] = useState('');
+  const [customData, setCustomData] = useState({ lirik: '', judul: '', gaya: 'Melankolis' });
   const [selectedStyle, setSelectedStyle] = useState('Melankolis');
 
   const generateInspirasi = () => {
@@ -325,13 +317,24 @@ function InspirasiPage({ quota, onQuotaDecrease, addToast }) {
     addToast('✨ Inspirasi berhasil dibuat!');
   };
 
-  const generateCustom = () => {
-    if (!customLyric.trim()) { addToast('Tulis tema lirik dulu!'); return; }
+  const uploadCustom = () => {
+    if (!customData.lirik.trim()) { addToast('Tulis lirik dulu!'); return; }
+    if (!customData.judul.trim()) { addToast('Tulis judul dulu!'); return; }
     if (quota <= 0) { addToast('Kuota habis!'); return; }
     onQuotaDecrease();
-    setResult({ titles: ['Custom Judul 1', 'Custom Judul 2', 'Custom Judul 3'], mood: selectedStyle, concept: `Lirik dengan tema: ${customLyric}` });
+    
+    const newPost = {
+      id: Date.now(),
+      user: 'Anda',
+      handle: '@user',
+      caption: `🎵 ${customData.judul} - ${customData.gaya}\n\n${customData.lirik}`,
+      likes: 0,
+      comments: 0
+    };
+    setFeedPosts([newPost, ...feedPosts]);
+    setCustomData({ lirik: '', judul: '', gaya: 'Melankolis' });
     setShowCustom(false);
-    addToast('✨ Lirik custom dibuat!');
+    addToast('✨ Lagu berhasil diupload ke Feed!');
   };
 
   return (
@@ -363,9 +366,17 @@ function InspirasiPage({ quota, onQuotaDecrease, addToast }) {
       {showCustom && (
         <div className="glass-card rounded-2xl p-4 mb-4 border border-blue-500/20 bg-gradient-to-br from-blue-900/10 to-transparent">
           <label className="text-xs text-blue-400 font-bold mb-2 block">Buat Lirik Custom</label>
-          <textarea value={customLyric} onChange={e => setCustomLyric(e.target.value)} placeholder="Tulis tema atau konsep lirik kamu..." className="w-full glass-card px-4 py-3 rounded-lg text-white border border-blue-500/20 mb-3 outline-none focus:border-blue-500 h-24 resize-none" />
-          <button onClick={generateCustom} className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-2 rounded-lg font-bold text-sm">
-            Generate Lirik
+          
+          <input value={customData.judul} onChange={e => setCustomData({...customData, judul: e.target.value})} placeholder="Judul Lagu..." className="w-full glass-card px-4 py-3 rounded-lg text-white border border-blue-500/20 mb-3 outline-none focus:border-blue-500" />
+          
+          <textarea value={customData.lirik} onChange={e => setCustomData({...customData, lirik: e.target.value})} placeholder="Tulis lirik lagu..." className="w-full glass-card px-4 py-3 rounded-lg text-white border border-blue-500/20 mb-3 outline-none focus:border-blue-500 h-24 resize-none" />
+          
+          <select value={customData.gaya} onChange={e => setCustomData({...customData, gaya: e.target.value})} className="w-full glass-card px-4 py-3 rounded-lg text-white border border-blue-500/20 mb-3 outline-none focus:border-blue-500">
+            {STYLES.map(s => <option key={s} className="bg-gray-900">{s}</option>)}
+          </select>
+          
+          <button onClick={uploadCustom} className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2">
+            <Upload size={16} /> Upload ke Feed
           </button>
         </div>
       )}
@@ -388,15 +399,27 @@ function InspirasiPage({ quota, onQuotaDecrease, addToast }) {
   );
 }
 
-function PesanPage({ addToast }) {
+function PesanPage({ addToast, adminMessages, setAdminMessages }) {
   const [activeChat, setActiveChat] = useState(null);
   const [message, setMessage] = useState('');
-  const [dmChats, setDmChats] = useState(DM_CHATS);
+  const [dmChats, setDmChats] = useState([
+    { id: 1, name: 'Rina Kusuma', online: true, unread: 2, lastMsg: 'Keren banget!', isAdmin: false, messages: [
+      { id: 1, from: 'them', text: 'Hei! Udah denger lagu baru?', time: '10:00' },
+      { id: 2, from: 'me', text: 'Belum nih', time: '10:01' },
+    ]},
+    { id: 2, name: 'Admin Support', online: true, unread: 0, lastMsg: 'Bantuan apa yang kamu butuhkan?', isAdmin: true, messages: [] },
+  ]);
 
   const sendMessage = () => {
     if (!message.trim()) { addToast('Ketik pesan dulu!'); return; }
+    
     setDmChats(prev => prev.map(d => d.id === activeChat.id ? { ...d, messages: [...d.messages, { id: Date.now(), from: 'me', text: message }] } : d));
     setActiveChat(prev => ({ ...prev, messages: [...prev.messages, { id: Date.now(), from: 'me', text: message }] }));
+    
+    if (activeChat.isAdmin) {
+      setAdminMessages([...adminMessages, { id: Date.now(), from: activeChat.name, text: message }]);
+    }
+    
     setMessage('');
     addToast('💬 Pesan terkirim!');
   };
@@ -544,7 +567,7 @@ function ProfilePage({ user, addToast }) {
   );
 }
 
-function AdminDashboard({ addToast }) {
+function AdminDashboard({ addToast, adminMessages }) {
   const [section, setSection] = useState('overview');
   const [applications, setApplications] = useState([
     { id: 1, name: 'Bagas Nugroho', platform: 'YouTube', status: 'pending' },
@@ -559,6 +582,7 @@ function AdminDashboard({ addToast }) {
   ]);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [newGroup, setNewGroup] = useState({ name: '', type: 1 });
+  const [selectedChat, setSelectedChat] = useState(null);
 
   const createGroup = () => {
     if (!newGroup.name.trim()) { addToast('Nama grup harus diisi!'); return; }
@@ -567,6 +591,26 @@ function AdminDashboard({ addToast }) {
     setShowCreateGroup(false);
     addToast('✅ Grup dibuat!');
   };
+
+  if (selectedChat) {
+    return (
+      <div className="flex flex-col h-screen">
+        <div className="glass-card px-4 py-3 flex items-center gap-3 border-b border-purple-500/20 sticky top-0">
+          <button onClick={() => setSelectedChat(null)}><ArrowLeft size={20} className="text-gray-400" /></button>
+          <p className="text-white font-bold">{selectedChat}</p>
+        </div>
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+          {adminMessages.filter(m => m.from === selectedChat).map(msg => (
+            <div key={msg.id} className="flex justify-start">
+              <div className="glass-card text-gray-300 border border-purple-500/20 px-4 py-2 rounded-2xl">
+                <p className="text-sm">{msg.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 py-6 pb-20">
@@ -601,7 +645,7 @@ function AdminDashboard({ addToast }) {
         <div className="flex flex-col gap-3">
           {applications.map(app => (
             <div key={app.id} className="glass-card rounded-lg p-3 border border-purple-500/20 flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <p className="font-bold text-white text-sm">{app.name}</p>
                 <p className="text-xs text-gray-400">{app.platform}</p>
               </div>
@@ -609,6 +653,7 @@ function AdminDashboard({ addToast }) {
                 <div className="flex gap-1">
                   <button onClick={() => { setApplications(prev => prev.map(a => a.id === app.id ? {...a, status:'approved'} : a)); addToast('✅ Approved!'); }} className="bg-emerald-700 text-white text-xs px-2 py-1 rounded">✓</button>
                   <button onClick={() => { setApplications(prev => prev.map(a => a.id === app.id ? {...a, status:'rejected'} : a)); addToast('❌ Rejected!'); }} className="bg-red-700 text-white text-xs px-2 py-1 rounded">✕</button>
+                  <button onClick={() => setSelectedChat(app.name)} className="bg-blue-700 text-white text-xs px-2 py-1 rounded flex items-center gap-1"><MessageSquare size={12} /> Chat</button>
                 </div>
               ) : (
                 <span className={`text-xs px-2 py-1 rounded font-bold ${app.status === 'approved' ? 'bg-emerald-700 text-emerald-300' : 'bg-red-700 text-red-300'}`}>{app.status}</span>
@@ -654,6 +699,8 @@ export default function App() {
   const [quota, setQuota] = useState(3);
   const [toasts, setToasts] = useState([]);
   const [activePage, setActivePage] = useState('dashboard');
+  const [feedPosts, setFeedPosts] = useState(FEED_POSTS);
+  const [adminMessages, setAdminMessages] = useState([]);
 
   const addToast = (msg) => {
     const id = Date.now();
@@ -695,12 +742,12 @@ export default function App() {
   const pages = {
     dashboard: <DashboardPage user={user} quota={quota} isAdmin={isAdmin} onNavigate={setActivePage} />,
     generator: <GeneratorPage quota={quota} onQuotaDecrease={() => setQuota(q => Math.max(0, q - 1))} addToast={addToast} />,
-    feed: <FeedPage addToast={addToast} />,
-    inspirasi: <InspirasiPage quota={quota} onQuotaDecrease={() => setQuota(q => Math.max(0, q - 1))} addToast={addToast} />,
-    pesan: <PesanPage addToast={addToast} />,
+    feed: <FeedPage addToast={addToast} feedPosts={feedPosts} setFeedPosts={setFeedPosts} />,
+    inspirasi: <InspirasiPage quota={quota} onQuotaDecrease={() => setQuota(q => Math.max(0, q - 1))} addToast={addToast} feedPosts={feedPosts} setFeedPosts={setFeedPosts} />,
+    pesan: <PesanPage addToast={addToast} adminMessages={adminMessages} setAdminMessages={setAdminMessages} />,
     profil: <ProfilePage user={user} addToast={addToast} />,
     harga: <HargaPage currentPlan={user?.plan} addToast={addToast} />,
-    admin: <AdminDashboard addToast={addToast} />,
+    admin: <AdminDashboard addToast={addToast} adminMessages={adminMessages} />,
   };
 
   return (
@@ -738,4 +785,4 @@ export default function App() {
       </nav>
     </div>
   );
-        }
+      }
